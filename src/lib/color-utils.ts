@@ -20,7 +20,8 @@ export const SCENES: Record<SceneType, SceneConfig> = {
         nameKey: 'scene_light',
         descKey: 'scene_light_desc',
         icon: 'Sun',
-        targetL: { min: 0.70, max: 0.95, optimal: 0.85 },
+        targetL: null,
+        apcaTarget: { min: 60, max: 95, optimal: 75, reference: 'black' },
         usageKey: 'scene_light_usage'
     },
     normal: {
@@ -29,6 +30,7 @@ export const SCENES: Record<SceneType, SceneConfig> = {
         descKey: 'scene_normal_desc',
         icon: 'Circle',
         targetL: null, // 动态跟随基准色
+        apcaTarget: null,
         usageKey: 'scene_normal_usage'
     },
     contrast: {
@@ -36,10 +38,49 @@ export const SCENES: Record<SceneType, SceneConfig> = {
         nameKey: 'scene_contrast',
         descKey: 'scene_contrast_desc',
         icon: 'Zap',
-        targetL: { min: 0.30, max: 0.55, optimal: 0.40 },
+        targetL: null,
+        apcaTarget: { min: 60, max: 90, optimal: 75, reference: 'white' },
         usageKey: 'scene_contrast_usage'
     }
 };
+
+// 辅助函数：二分查找目标 APCA 的 L 值
+function findLForApca(originalOklch: Oklch, targetLcMag: number, reference: 'black' | 'white'): number {
+    const refHex = reference === 'black' ? '#000000' : '#ffffff';
+    let min = 0;
+    let max = 1;
+    let bestL = originalOklch.l;
+    let minDiff = Infinity;
+
+    // 20 iterations gives enough precision
+    for(let i=0; i<20; i++) {
+        const mid = (min + max) / 2;
+        const candidate = { ...originalOklch, l: mid };
+        const hex = formatHex(rgbGamut(candidate));
+        const lc = calcAPCA(hex, refHex) as number;
+        const mag = Math.abs(lc);
+        const diff = Math.abs(mag - targetLcMag);
+        
+        if (diff < minDiff) {
+            minDiff = diff;
+            bestL = mid;
+        }
+        
+        if (diff < 0.5) break;
+
+        // Determine direction
+        if (reference === 'black') {
+             // Against black: Higher L -> Higher Contrast
+             if (mag < targetLcMag) min = mid;
+             else max = mid;
+        } else {
+             // Against white: Lower L -> Higher Contrast (magnitude)
+             if (mag < targetLcMag) max = mid;
+             else min = mid;
+        }
+    }
+    return bestL;
+}
 
 // 颜色处理工具函数
 export function createColorData(hex: string, id: string, source: 'user' | 'adjusted' = 'user'): ColorData {
@@ -101,8 +142,8 @@ export function getApcaRating(score: number): string {
 
 // 自动调整逻辑
 export function adjustColorsToScene(
-    colors: ColorData[], 
-    sceneId: SceneType, 
+    colors: ColorData[],
+    sceneId: SceneType,
     referenceId: string | null
 ): ColorData[] {
     if (!colors.length) return [];
@@ -110,26 +151,46 @@ export function adjustColorsToScene(
     const scene = SCENES[sceneId];
     const refColor = colors.find(c => c.id === referenceId) || colors[0];
     
-    // 1. 确定目标明度 L
+    // 1. Determine targets
     let targetL = refColor.oklch.l;
+    let targetApcaMag: number | null = null;
 
-    if (scene.targetL) {
-        // 如果场景有明确的明度范围，将目标 L 限制在范围内
+    if (scene.apcaTarget) {
+        const refHex = scene.apcaTarget.reference === 'white' ? '#ffffff' : '#000000';
+        // Calculate current APCA of reference color
+        const refLc = calcAPCA(refColor.hex, refHex) as number;
+        const currentMag = Math.abs(refLc);
+        
+        // Clamp to scene limits
+        targetApcaMag = Math.max(scene.apcaTarget.min, Math.min(scene.apcaTarget.max, currentMag));
+    } else if (scene.targetL) {
+        // Legacy fallback
         targetL = Math.max(scene.targetL.min, Math.min(scene.targetL.max, targetL));
     }
-    // 如果是 normal 场景，targetL 就是基准色的原始 L，不做额外限制
-
-    // 2. 调整所有颜色
+    
+    // 2. Adjust all colors
     return colors.map(color => {
-        const newOklch = { ...color.oklch, l: targetL };
-        // 色域映射：确保颜色在 RGB 范围内，防止颜色崩坏
+        let finalL = targetL;
+
+        if (scene.apcaTarget && targetApcaMag !== null) {
+            finalL = findLForApca(color.oklch, targetApcaMag, scene.apcaTarget.reference);
+        } else if (scene.id === 'normal') {
+            // Normal scene: unify lightness to reference
+            finalL = targetL;
+        } else if (scene.targetL) {
+             // Legacy scene with targetL
+             finalL = targetL;
+        }
+
+        const newOklch = { ...color.oklch, l: finalL };
+        // Gamut mapping
         const gamutedColor = rgbGamut(newOklch);
         const newHex = formatHex(gamutedColor);
 
         return {
             ...color,
             hex: newHex,
-            oklch: toOklch(newHex), // 重新解析以确保数据一致性
+            oklch: toOklch(newHex),
             source: 'adjusted'
         };
     });
@@ -138,20 +199,19 @@ export function adjustColorsToScene(
 // 分析逻辑
 export function analyzeHarmony(
     colors: ColorData[],
-    sceneId: SceneType,
-    bgColor?: ColorData,
-    textColor?: ColorData
+    sceneId: SceneType
 ): HarmonyAnalysis {
     const issues: AnalysisIssue[] = [];
     const scene = SCENES[sceneId];
     
-    // 1. 检查主色一致性
+    // 1. 检查一致性 (APCA mode should check APCA consistency, but we'll stick to L consistency as proxy for now)
     const lValues = colors.map(c => c.oklch.l);
     const avgL = lValues.reduce((a, b) => a + b, 0) / (lValues.length || 1);
     const variance = lValues.reduce((a, b) => a + Math.pow(b - avgL, 2), 0) / (lValues.length || 1);
     const stdDev = Math.sqrt(variance);
     
-    const primaryConsistency = stdDev < 0.05; // 允许 5% 的明度偏差
+    // Allow slightly more deviation if using APCA as hues affect L
+    const primaryConsistency = stdDev < 0.08;
 
     if (!primaryConsistency && colors.length > 1) {
         issues.push({
@@ -162,7 +222,25 @@ export function analyzeHarmony(
 
     // 2. 检查场景符合度
     let targetLCompliance = true;
-    if (scene.targetL) {
+    
+    if (scene.apcaTarget) {
+        const refHex = scene.apcaTarget.reference === 'white' ? '#ffffff' : '#000000';
+        const outOfBounds = colors.filter(c => {
+            const lc = calcAPCA(c.hex, refHex) as number;
+            const mag = Math.abs(lc);
+            // Allow small epsilon
+            return mag < scene.apcaTarget!.min - 1 || mag > scene.apcaTarget!.max + 1;
+        });
+
+        if (outOfBounds.length > 0) {
+             targetLCompliance = false;
+             issues.push({
+                type: 'warning',
+                message: 'analysis_target_noncompliance',
+                value: outOfBounds.length
+            });
+        }
+    } else if (scene.targetL) {
         const outOfBounds = colors.filter(c => c.oklch.l < scene.targetL!.min || c.oklch.l > scene.targetL!.max);
         if (outOfBounds.length > 0) {
             targetLCompliance = false;
@@ -174,27 +252,9 @@ export function analyzeHarmony(
         }
     }
 
-    // 3. 检查 APCA 对比度 (如果有背景色和文字色)
-    let apcaScore = undefined;
-    let apcaRating = undefined;
-
-    if (bgColor && textColor) {
-        apcaScore = getApcaContrast(textColor.hex, bgColor.hex);
-        apcaRating = getApcaRating(apcaScore);
-
-        if (Math.abs(apcaScore) < 45) {
-            issues.push({
-                type: 'error',
-                message: 'analysis_text_contrast_low'
-            });
-        }
-    }
-
     return {
         primaryConsistency,
         targetLCompliance,
-        apcaScore,
-        apcaRating,
         issues
     };
 }

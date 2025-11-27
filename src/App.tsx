@@ -1,35 +1,42 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { AnimatePresence } from 'framer-motion';
+import { ColorProvider, useColor } from './store/ColorContext';
+import { LanguageProvider } from './store/LanguageContext';
+import { AmbientBackground } from './components/AmbientBackground';
+import { HeroSection } from './components/HeroSection';
+import { MainLayout } from './components/layout/MainLayout';
 
-function App() {
-  const [count, setCount] = useState(0)
+function AppContent() {
+    const { state } = useColor();
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    // Determine if we have content (colors) to show
+    const hasContent = state.primaryColors.length > 0;
+
+    // Extract hex codes for the ambient background
+    const bgColors = state.primaryColors.map(c => c.hex);
+
+    return (
+        <div className="min-h-screen relative font-sans text-slate-800 overflow-x-hidden">
+            <AmbientBackground colors={bgColors} />
+
+            <AnimatePresence>
+                {!hasContent ? (
+                    <HeroSection key="hero" />
+                ) : (
+                    <MainLayout key="main" />
+                )}
+            </AnimatePresence>
+        </div>
+    );
 }
 
-export default App
+function App() {
+    return (
+        <LanguageProvider>
+            <ColorProvider>
+                <AppContent />
+            </ColorProvider>
+        </LanguageProvider>
+    );
+}
+
+export default App;

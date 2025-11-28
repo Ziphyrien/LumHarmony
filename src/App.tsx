@@ -5,10 +5,12 @@ import { ColorTable } from './components/data/ColorTable';
 import { StatusBar } from './components/layout/StatusBar';
 import { extractHexCodes, createColorData, adjustColorsToScene, SCENES } from './lib/color-utils';
 import type { SceneType } from './lib/types';
+import { t, type Language } from './lib/i18n';
 
 function App() {
   const [inputString, setInputString] = useState<string>('');
   const [selectedScene, setSelectedScene] = useState<SceneType>('light');
+  const [language, setLanguage] = useState<Language>('zh');
 
   // Process colors
   const sourceColors = useMemo(() => {
@@ -45,26 +47,30 @@ function App() {
   return (
     <MainLayout>
       {/* Top Section: Input & Config */}
-      <InputSection 
+      <InputSection
         inputString={inputString}
         onInputChange={setInputString}
         selectedScene={selectedScene}
         onSceneChange={setSelectedScene}
+        lang={language}
       />
 
       {/* Middle Section: Data Table */}
-      <ColorTable 
+      <ColorTable
         sourceColors={sourceColors}
         adjustedColors={adjustedColors}
         scene={SCENES[selectedScene]}
+        lang={language}
       />
 
       {/* Bottom Section: Status */}
-      <StatusBar 
+      <StatusBar
         parsedCount={sourceColors.length}
-        sceneName={SCENES[selectedScene].id === 'light' ? 'Light Mode' : SCENES[selectedScene].id === 'normal' ? 'Normal' : 'High Contrast'}
+        sceneName={t(`scene_${selectedScene}`, language)}
         onExportJson={handleExportJson}
         onCopyCss={handleCopyCss}
+        lang={language}
+        onLanguageChange={setLanguage}
       />
     </MainLayout>
   );

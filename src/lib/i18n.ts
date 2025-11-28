@@ -23,6 +23,7 @@ export const translations = {
         col_adjusted: 'ADJUSTED',
         col_apca: 'APCA SCORE',
         col_rating: 'RATING',
+        label_target: 'Target',
         
         // Status Bar
         status_colors_parsed: 'colors parsed',
@@ -56,6 +57,7 @@ export const translations = {
         col_adjusted: '调整后',
         col_apca: 'APCA 分数',
         col_rating: '评级',
+        label_target: '目标',
         
         // Status Bar
         status_colors_parsed: '个颜色已解析',

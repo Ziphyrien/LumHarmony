@@ -3,6 +3,7 @@ import { Sun, Circle, Zap } from 'lucide-react';
 import { SCENES } from '../../lib/color-utils';
 import type { SceneType } from '../../lib/types';
 import { clsx } from 'clsx';
+import { t, type Language } from '../../lib/i18n';
 
 const ICON_MAP = {
     Sun: Sun,
@@ -13,17 +14,18 @@ const ICON_MAP = {
 interface SceneSelectorProps {
     selected: SceneType;
     onChange: (scene: SceneType) => void;
+    lang: Language;
 }
 
-export function SceneSelector({ selected, onChange }: SceneSelectorProps) {
+export function SceneSelector({ selected, onChange, lang }: SceneSelectorProps) {
     const scenes = Object.values(SCENES);
 
     return (
-        <div className="h-full flex flex-col">
-            <div className="px-4 py-3 border-b border-neutral-800">
-                <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wider">Target Scene</h3>
+        <div className="flex flex-col">
+            <div className="px-4 py-3 border-b border-neutral-800 flex-none">
+                <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wider">{t('scene_title', lang)}</h3>
             </div>
-            <div className="flex-1 p-4 space-y-2 overflow-y-auto">
+            <div className="p-4 space-y-2">
                 {scenes.map((scene) => {
                     const Icon = ICON_MAP[scene.icon as keyof typeof ICON_MAP];
                     const isActive = selected === scene.id;
@@ -34,8 +36,8 @@ export function SceneSelector({ selected, onChange }: SceneSelectorProps) {
                             onClick={() => onChange(scene.id)}
                             className={clsx(
                                 "w-full flex items-start gap-3 p-3 rounded-sm border text-left transition-all",
-                                isActive 
-                                    ? "bg-neutral-900 border-neutral-700 ring-1 ring-neutral-700" 
+                                isActive
+                                    ? "bg-neutral-900 border-neutral-700 ring-1 ring-neutral-700"
                                     : "bg-transparent border-neutral-800 hover:bg-neutral-900/50 hover:border-neutral-700"
                             )}
                         >
@@ -50,15 +52,10 @@ export function SceneSelector({ selected, onChange }: SceneSelectorProps) {
                                     "text-sm font-medium",
                                     isActive ? "text-white" : "text-neutral-400"
                                 )}>
-                                    {/* Use hardcoded names since we don't have i18n set up yet based on types */}
-                                    {scene.id === 'light' && 'Light Mode'}
-                                    {scene.id === 'normal' && 'Normal / Unified'}
-                                    {scene.id === 'contrast' && 'High Contrast'}
+                                    {t(`scene_${scene.id}`, lang)}
                                 </div>
                                 <div className="text-xs text-neutral-500 mt-1 leading-relaxed">
-                                    {scene.id === 'light' && 'Optimized for dark text on light backgrounds. Targets APCA 60-95.'}
-                                    {scene.id === 'normal' && 'Standard unification. Preserves original intent while normalizing lightness.'}
-                                    {scene.id === 'contrast' && 'Strict accessibility compliance. Targets APCA 60-90 against white.'}
+                                    {t(`scene_${scene.id}_desc`, lang)}
                                 </div>
                             </div>
                         </button>

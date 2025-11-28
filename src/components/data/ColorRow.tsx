@@ -3,14 +3,16 @@ import { ArrowRight, Copy, Check } from 'lucide-react';
 import { clsx } from 'clsx';
 import { getApcaContrast, getApcaRating } from '../../lib/color-utils';
 import type { ColorData, SceneConfig } from '../../lib/types';
+import { t, type Language } from '../../lib/i18n';
 
 interface ColorRowProps {
     source: ColorData;
     adjusted: ColorData;
     scene: SceneConfig;
+    lang: Language;
 }
 
-export function ColorRow({ source, adjusted, scene }: ColorRowProps) {
+export function ColorRow({ source, adjusted, scene, lang }: ColorRowProps) {
     const [copied, setCopied] = useState<string | null>(null);
 
     const handleCopy = (hex: string, type: 'source' | 'adjusted') => {
@@ -74,7 +76,7 @@ export function ColorRow({ source, adjusted, scene }: ColorRowProps) {
                 </div>
                 {scene.apcaTarget && (
                     <div className="text-[10px] text-neutral-500 mt-0.5">
-                        Target: {scene.apcaTarget.min}-{scene.apcaTarget.max}
+                        {t('label_target', lang)}: {scene.apcaTarget.min}-{scene.apcaTarget.max}
                     </div>
                 )}
             </div>

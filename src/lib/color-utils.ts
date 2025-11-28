@@ -21,7 +21,7 @@ export const SCENES: Record<SceneType, SceneConfig> = {
         descKey: 'scene_light_desc',
         icon: 'Sun',
         targetL: null,
-        apcaTarget: { min: 60, max: 95, optimal: 75, reference: 'black' },
+        apcaTarget: { min: 60, max: 95, optimal: 75, reference: 'white' },
         usageKey: 'scene_light_usage'
     },
     normal: {

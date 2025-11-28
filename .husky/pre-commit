@@ -1,0 +1,5 @@
+# 全量类型检查
+npx tsc --noEmit
+
+# 对暂存区文件运行 lint 和 fix
+npx lint-staged

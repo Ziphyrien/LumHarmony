@@ -43,12 +43,12 @@ export function StatusBar({ parsedCount, sceneName, onExportJson, onCopyCss, lan
 
                 <button
                     onClick={() => onLanguageChange(lang === 'en' ? 'zh' : 'en')}
-                    className="flex items-center justify-center gap-1.5 px-3 py-1 min-w-[70px] hover:bg-neutral-900 text-xs text-neutral-400 hover:text-neutral-200 transition-colors rounded-sm"
+                    className="flex items-center gap-1.5 px-3 py-1 hover:bg-neutral-900 text-xs text-neutral-400 hover:text-neutral-200 transition-colors rounded-sm"
                     title="Switch Language"
                 >
                     <Globe size={12} />
-                    <span className={clsx("uppercase", lang === 'zh' ? "font-sans" : "font-mono")}>
-                        {lang === 'en' ? 'EN' : '中文'}
+                    <span className={clsx(lang === 'en' ? "font-sans" : "font-mono")}>
+                        {lang === 'en' ? '中文' : 'EN'}
                     </span>
                 </button>
             </div>

@@ -11,6 +11,7 @@ function App() {
   const [inputString, setInputString] = useState<string>('');
   const [selectedScene, setSelectedScene] = useState<SceneType>('light');
   const [language, setLanguage] = useState<Language>('zh');
+  const [manualPrimaryId, setManualPrimaryId] = useState<string | null>(null);
 
   // Process colors
   const sourceColors = useMemo(() => {
@@ -20,9 +21,16 @@ function App() {
     return hexCodes.map((hex, index) => createColorData(hex, `color-${index}`, 'user'));
   }, [inputString]);
 
+  const primaryColorId = useMemo(() => {
+    if (manualPrimaryId && sourceColors.find(c => c.id === manualPrimaryId)) {
+      return manualPrimaryId;
+    }
+    return sourceColors.length > 0 ? sourceColors[0].id : null;
+  }, [sourceColors, manualPrimaryId]);
+
   const adjustedColors = useMemo(() => {
-    return adjustColorsToScene(sourceColors, selectedScene, null);
-  }, [sourceColors, selectedScene]);
+    return adjustColorsToScene(sourceColors, selectedScene, primaryColorId);
+  }, [sourceColors, selectedScene, primaryColorId]);
 
   const handleExportJson = () => {
     const data = adjustedColors.map(c => ({
@@ -61,6 +69,8 @@ function App() {
         adjustedColors={adjustedColors}
         scene={SCENES[selectedScene]}
         lang={language}
+        primaryColorId={primaryColorId}
+        onPrimaryChange={setManualPrimaryId}
       />
 
       {/* Bottom Section: Status */}

@@ -10,9 +10,11 @@ interface ColorRowProps {
     adjusted: ColorData;
     scene: SceneConfig;
     lang: Language;
+    isPrimary: boolean;
+    onSetPrimary: () => void;
 }
 
-export function ColorRow({ source, adjusted, scene, lang }: ColorRowProps) {
+export function ColorRow({ source, adjusted, scene, lang, isPrimary, onSetPrimary }: ColorRowProps) {
     const [copied, setCopied] = useState<string | null>(null);
 
     const handleCopy = (hex: string, type: 'source' | 'adjusted') => {
@@ -22,7 +24,8 @@ export function ColorRow({ source, adjusted, scene, lang }: ColorRowProps) {
     };
 
     // APCA Metrics
-    const refHex = scene.apcaTarget?.reference === 'white' ? '#ffffff' : '#000000';
+    // Default to white reference if not specified (consistent with light/contrast scenes)
+    const refHex = scene.apcaTarget?.reference === 'black' ? '#000000' : '#ffffff';
     const apcaScore = getApcaContrast(adjusted.hex, refHex);
     const apcaRating = getApcaRating(apcaScore);
     const apcaMag = Math.abs(apcaScore);
@@ -35,7 +38,31 @@ export function ColorRow({ source, adjusted, scene, lang }: ColorRowProps) {
     }
 
     return (
-        <div className="grid grid-cols-[1fr_40px_1fr_120px_120px] gap-4 items-center py-2 px-4 border-b border-neutral-800 hover:bg-neutral-900/50 group transition-colors text-sm">
+        <div className={clsx(
+            "grid grid-cols-[30px_1fr_40px_1fr_120px_120px] gap-4 items-center py-2 px-4 border-b border-neutral-800 hover:bg-neutral-900/50 group transition-colors text-sm relative",
+            isPrimary && "bg-neutral-900/30"
+        )}>
+            {/* Primary Selection - Expanded click area */}
+            <div 
+                className="absolute left-0 top-0 bottom-0 w-[46px] flex items-center justify-center cursor-pointer outline-none z-10 group/primary"
+                onClick={onSetPrimary}
+            >
+                <div className={clsx(
+                    "w-1.5 h-1.5 rounded-full transition-all duration-300",
+                    isPrimary 
+                        ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] opacity-100" 
+                        : "bg-neutral-700 opacity-0 group-hover:opacity-100"
+                )} />
+
+                {/* Custom Tooltip */}
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-1 px-2 py-1 bg-neutral-900 border border-neutral-800 text-neutral-400 text-[10px] rounded opacity-0 group-hover/primary:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-xl">
+                    {t('set_primary', lang)}
+                </div>
+            </div>
+
+            {/* Spacer for grid alignment */}
+            <div></div>
+
             {/* Source */}
             <div className="flex items-center gap-3">
                 <div 

@@ -34,6 +34,9 @@ export const translations = {
         // Warnings
         warn_no_colors: 'No colors detected',
         warn_paste_hint: 'Paste hex codes in the input area above',
+        
+        // Actions
+        set_primary: 'Set as primary reference color',
     },
     zh: {
         app_title: 'LumHarmony',
@@ -42,7 +45,7 @@ export const translations = {
         input_desc: '在此处粘贴 HEX 色值',
         input_placeholder: '#123456 #abcdef ...',
         scene_title: '目标场景',
-        primary_color_title: '主色 / 背景色',
+        primary_color_title: '主参考色',
         
         // Scenes
         scene_light: '浅色模式',
@@ -68,6 +71,9 @@ export const translations = {
         // Warnings
         warn_no_colors: '未检测到颜色',
         warn_paste_hint: '请在上方输入区域粘贴十六进制颜色代码',
+
+        // Actions
+        set_primary: '设为主参考色',
     }
 };
 

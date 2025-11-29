@@ -16,7 +16,7 @@ export const translations = {
         scene_normal: 'Normal / Unified',
         scene_normal_desc: 'Standard unification. Preserves original intent while normalizing lightness.',
         scene_contrast: 'High Contrast',
-        scene_contrast_desc: 'Strict accessibility compliance. Targets APCA 60-90 against white.',
+        scene_contrast_desc: 'Strict accessibility compliance. Targets APCA 90-100 against white.',
         
         // Table Headers
         col_source: 'SOURCE COLOR',
@@ -50,7 +50,7 @@ export const translations = {
         scene_normal: '标准 / 统一',
         scene_normal_desc: '标准统一化处理。在统一亮度时保留原始意图。',
         scene_contrast: '高对比度',
-        scene_contrast_desc: '严格的无障碍合规性。针对白色背景目标 APCA 60-90。',
+        scene_contrast_desc: '严格的无障碍合规性。针对白色背景目标 APCA 90-100。',
         
         // Table Headers
         col_source: '原始颜色',

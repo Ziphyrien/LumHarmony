@@ -39,7 +39,7 @@ export const SCENES: Record<SceneType, SceneConfig> = {
         descKey: 'scene_contrast_desc',
         icon: 'Zap',
         targetL: null,
-        apcaTarget: { min: 60, max: 90, optimal: 75, reference: 'white' },
+        apcaTarget: { min: 90, max: 100, optimal: 95, reference: 'white' },
         usageKey: 'scene_contrast_usage'
     }
 };
@@ -66,7 +66,7 @@ function findLForApca(originalOklch: Oklch, targetLcMag: number, reference: 'bla
             bestL = mid;
         }
         
-        if (diff < 0.5) break;
+        if (diff < 0.01) break;
 
         // Determine direction
         if (reference === 'black') {
@@ -161,8 +161,8 @@ export function adjustColorsToScene(
         const refLc = calcAPCA(refColor.hex, refHex) as number;
         const currentMag = Math.abs(refLc);
         
-        // Clamp to scene limits
-        targetApcaMag = Math.max(scene.apcaTarget.min, Math.min(scene.apcaTarget.max, currentMag));
+        // Clamp to scene limits. Add small buffer to min to ensure we don't fall just below due to precision
+        targetApcaMag = Math.max(scene.apcaTarget.min + 0.2, Math.min(scene.apcaTarget.max, currentMag));
     } else if (scene.targetL) {
         // Legacy fallback
         targetL = Math.max(scene.targetL.min, Math.min(scene.targetL.max, targetL));

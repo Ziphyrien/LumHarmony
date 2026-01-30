@@ -1,5 +1,7 @@
 import type { Oklch } from 'culori';
 
+export type ColorFormat = 'hex' | 'oklch';
+
 export type SceneType = 'light' | 'normal' | 'contrast';
 
 export interface SceneConfig {

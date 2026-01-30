@@ -8,6 +8,7 @@ export const translations = {
         input_desc: 'Paste hex codes anywhere',
         input_placeholder: '#123456 #abcdef ...',
         scene_title: 'TARGET SCENE',
+        output_format: 'OUTPUT FORMAT',
         primary_color_title: 'PRIMARY COLOR',
         
         // Scenes
@@ -34,6 +35,7 @@ export const translations = {
         // Warnings
         warn_no_colors: 'No colors detected',
         warn_paste_hint: 'Paste hex codes in the input area above',
+        warn_gamut_clipped: 'sRGB Gamut Clipped (Hex approximation)',
         
         // Actions
         set_primary: 'Set as primary reference color',
@@ -45,6 +47,7 @@ export const translations = {
         input_desc: '在此处粘贴 HEX 色值',
         input_placeholder: '#123456 #abcdef ...',
         scene_title: '目标场景',
+        output_format: '输出格式',
         primary_color_title: '主参考色',
         
         // Scenes
@@ -71,6 +74,7 @@ export const translations = {
         // Warnings
         warn_no_colors: '未检测到颜色',
         warn_paste_hint: '请在上方输入区域粘贴十六进制颜色代码',
+        warn_gamut_clipped: 'sRGB 色域受限 (Hex 近似值)',
 
         // Actions
         set_primary: '设为主参考色',

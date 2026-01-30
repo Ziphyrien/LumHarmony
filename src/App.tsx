@@ -3,13 +3,14 @@ import { MainLayout } from './components/layout/MainLayout';
 import { InputSection } from './components/controls/InputSection';
 import { ColorTable } from './components/data/ColorTable';
 import { StatusBar } from './components/layout/StatusBar';
-import { extractHexCodes, createColorData, adjustColorsToScene, SCENES } from './lib/color-utils';
-import type { SceneType } from './lib/types';
+import { extractHexCodes, createColorData, adjustColorsToScene, SCENES, formatColor } from './lib/color-utils';
+import type { SceneType, ColorFormat } from './lib/types';
 import { t, type Language } from './lib/i18n';
 
 function App() {
   const [inputString, setInputString] = useState<string>('');
   const [selectedScene, setSelectedScene] = useState<SceneType>('light');
+  const [format, setFormat] = useState<ColorFormat>('oklch');
   const [language, setLanguage] = useState<Language>('zh');
   const [manualPrimaryId, setManualPrimaryId] = useState<string | null>(null);
 
@@ -35,6 +36,7 @@ function App() {
   const handleExportJson = () => {
     const data = adjustedColors.map(c => ({
       hex: c.hex,
+      oklch: formatColor(c, 'oklch'),
       sourceHex: sourceColors.find(s => s.id === c.id)?.hex
     }));
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -47,9 +49,8 @@ function App() {
   };
 
   const handleCopyCss = () => {
-    const cssVars = adjustedColors.map((c, i) => `--color-${i + 1}: ${c.hex};`).join('\n');
+    const cssVars = adjustedColors.map((c, i) => `--color-${i + 1}: ${formatColor(c, format)};`).join('\n');
     navigator.clipboard.writeText(cssVars);
-    alert('CSS Variables copied to clipboard!');
   };
 
   return (
@@ -71,6 +72,8 @@ function App() {
         lang={language}
         primaryColorId={primaryColorId}
         onPrimaryChange={setManualPrimaryId}
+        format={format}
+        onFormatChange={setFormat}
       />
 
       {/* Bottom Section: Status */}

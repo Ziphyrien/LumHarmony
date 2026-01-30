@@ -7,7 +7,7 @@ import {
     type Color
 } from 'culori';
 import { calcAPCA } from 'apca-w3';
-import type { ColorData, SceneType, SceneConfig, AnalysisIssue, HarmonyAnalysis } from './types';
+import type { ColorData, SceneType, SceneConfig, AnalysisIssue, HarmonyAnalysis, ColorFormat } from './types';
 
 // 初始化转换器
 const toOklch = converter('oklch') as (c: string | Color) => Oklch;
@@ -190,7 +190,7 @@ export function adjustColorsToScene(
         return {
             ...color,
             hex: newHex,
-            oklch: toOklch(newHex),
+            oklch: newOklch, // Preserve original high-gamut values
             source: 'adjusted'
         };
     });
@@ -257,4 +257,18 @@ export function analyzeHarmony(
         targetLCompliance,
         issues
     };
+}
+
+export function formatColor(color: ColorData, format: ColorFormat): string {
+    if (format === 'hex') {
+        return color.hex;
+    }
+    
+    // Format OKLCH: oklch(L C H)
+    // Use percentages for L, and number for C/H for better readability
+    const l = (color.oklch.l * 100).toFixed(2) + '%';
+    const c = color.oklch.c.toFixed(4);
+    const h = color.oklch.h?.toFixed(2) || '0';
+    
+    return `oklch(${l} ${c} ${h})`;
 }

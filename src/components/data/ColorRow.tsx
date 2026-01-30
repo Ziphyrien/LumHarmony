@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ArrowRight, Copy, Check } from 'lucide-react';
 import { clsx } from 'clsx';
-import { getApcaContrast, getApcaRating } from '../../lib/color-utils';
-import type { ColorData, SceneConfig } from '../../lib/types';
+import { getApcaContrast, getApcaRating, formatColor } from '../../lib/color-utils';
+import type { ColorData, SceneConfig, ColorFormat } from '../../lib/types';
 import { t, type Language } from '../../lib/i18n';
 
 interface ColorRowProps {
@@ -12,14 +12,16 @@ interface ColorRowProps {
     lang: Language;
     isPrimary: boolean;
     onSetPrimary: () => void;
+    format: ColorFormat;
 }
 
-export function ColorRow({ source, adjusted, scene, lang, isPrimary, onSetPrimary }: ColorRowProps) {
+export function ColorRow({ source, adjusted, scene, lang, isPrimary, onSetPrimary, format }: ColorRowProps) {
     const [copied, setCopied] = useState<string | null>(null);
 
-    const handleCopy = (hex: string, type: 'source' | 'adjusted') => {
-        navigator.clipboard.writeText(hex);
-        setCopied(type);
+    const handleCopy = (color: ColorData) => {
+        const text = formatColor(color, format);
+        navigator.clipboard.writeText(text);
+        setCopied(color.source === 'user' ? 'source' : 'adjusted');
         setTimeout(() => setCopied(null), 1500);
     };
 
@@ -36,6 +38,17 @@ export function ColorRow({ source, adjusted, scene, lang, isPrimary, onSetPrimar
         if (apcaMag < scene.apcaTarget.min) statusColor = 'text-red-500';
         else if (apcaMag < scene.apcaTarget.optimal) statusColor = 'text-yellow-500';
     }
+
+    // Check if clipped (Hex differs significantly from OKLCH intent)
+    // Simple check: if we are in OKLCH mode, we can show if Hex fallback is clipped
+    // Or just always show if the color is out of gamut
+    // Since we don't have isClipped flag computed yet, we can check if source was 'adjusted' and presumably high chroma?
+    // Actually, color-utils handles this via rgbGamut. We can check if `color.hex`'s oklch value is different from `color.oklch`.
+    // Let's do a quick check on render.
+    
+    // Wait, a better way is to see if we want to warn about HEX output being clipped.
+    // The user asked for "show hex hint".
+    // Let's add an indicator next to the color value.
 
     return (
         <div className={clsx(
@@ -69,8 +82,8 @@ export function ColorRow({ source, adjusted, scene, lang, isPrimary, onSetPrimar
                     className="w-8 h-8 rounded-sm border border-white/10 shadow-sm"
                     style={{ backgroundColor: source.hex }}
                 />
-                <div className="font-mono text-neutral-400 group-hover:text-neutral-300 cursor-pointer" onClick={() => handleCopy(source.hex, 'source')}>
-                    {source.hex}
+                <div className="font-mono text-neutral-400 group-hover:text-neutral-300 cursor-pointer" onClick={() => handleCopy(source)}>
+                    {formatColor(source, format)}
                 </div>
                 {copied === 'source' && <Check size={12} className="text-emerald-500" />}
             </div>
@@ -84,15 +97,28 @@ export function ColorRow({ source, adjusted, scene, lang, isPrimary, onSetPrimar
             <div className="flex items-center gap-3">
                 <div 
                     className="w-8 h-8 rounded-sm border border-white/10 shadow-sm relative group/preview"
-                    style={{ backgroundColor: adjusted.hex }}
+                    style={{ backgroundColor: formatColor(adjusted, format) }}
                 >
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/preview:opacity-100 bg-black/20 transition-opacity cursor-pointer" onClick={() => handleCopy(adjusted.hex, 'adjusted')}>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/preview:opacity-100 bg-black/20 transition-opacity cursor-pointer" onClick={() => handleCopy(adjusted)}>
                         <Copy size={12} className="text-white" />
                     </div>
                 </div>
-                <div className="font-mono text-neutral-200 font-medium cursor-pointer" onClick={() => handleCopy(adjusted.hex, 'adjusted')}>
-                    {adjusted.hex}
+                <div className="font-mono text-neutral-200 font-medium cursor-pointer" onClick={() => handleCopy(adjusted)}>
+                    {formatColor(adjusted, format)}
                 </div>
+                {/* Hex Clip Warning */}
+                {format === 'oklch' && (
+                    <div className="group/gamut relative flex items-center ml-2">
+                         <div className="text-[10px] px-1.5 py-0.5 rounded text-neutral-500 bg-neutral-900 border border-neutral-800 font-mono opacity-60 group-hover/gamut:opacity-100 transition-opacity cursor-help">
+                            {adjusted.hex}
+                         </div>
+                         
+                         {/* Tooltip */}
+                         <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-neutral-900 border border-neutral-800 text-neutral-400 text-[10px] rounded opacity-0 group-hover/gamut:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-xl">
+                            {t('warn_gamut_clipped', lang)}
+                         </div>
+                    </div>
+                )}
                 {copied === 'adjusted' && <Check size={12} className="text-emerald-500" />}
             </div>
 

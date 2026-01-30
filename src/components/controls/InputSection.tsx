@@ -1,4 +1,4 @@
-import React from 'react';
+
 import type { SceneType } from '../../lib/types';
 import { SceneSelector } from './SceneSelector';
 import { t, type Language } from '../../lib/i18n';
@@ -34,7 +34,7 @@ export function InputSection({
                 />
             </div>
             
-            <div className="bg-neutral-950 flex flex-col">
+            <div className="bg-neutral-950 flex flex-col h-full border-l border-neutral-800">
                 <SceneSelector
                     selected={selectedScene}
                     onChange={onSceneChange}

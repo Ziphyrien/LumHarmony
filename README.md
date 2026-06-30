@@ -94,7 +94,6 @@ LumHarmony/
 │   │   └── types.ts       # TypeScript 类型定义
 │   ├── App.tsx            # 主应用组件
 │   └── main.tsx           # 应用入口
-├── design_docs.md         # 设计文档
 └── package.json
 ```
 

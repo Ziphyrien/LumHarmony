@@ -4,10 +4,7 @@
 
 **智能颜色和谐化工具 | Intelligent Color Harmony Tool**
 
-[![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-7.2-646CFF?logo=vite)](https://vitejs.dev/)
-[![APCA](https://img.shields.io/badge/APCA-Enabled-00D1B2)](https://github.com/Myndex/apca-w3)
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react)](https://react.dev/) [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)](https://www.typescriptlang.org/) [![Vite](https://img.shields.io/badge/Vite-7.2-646CFF?logo=vite)](https://vitejs.dev/) [![APCA](https://img.shields.io/badge/APCA-Enabled-00D1B2)](https://github.com/Myndex/apca-w3)
 
 </div>
 
@@ -67,10 +64,10 @@ pnpm preview
 ### 场景说明
 
 | 场景 | 用途 | APCA 目标范围 | 适用于 |
-|------|------|--------------|--------|
-| **浅色模式** | 浅色背景上的深色文本 | 60-95 Lc | 白色或浅色背景的界面 |
+| --- | --- | --- | --- |
+| **浅色模式** | 基于白色参考色适配 | 60-95 Lc | 需适中对比度的色彩组合 |
 | **普通模式** | 保持原始颜色亮度关系 | 无强制要求 | 品牌色、装饰性颜色 |
-| **高对比度模式** | 高对比场景 | 90-100 Lc | 无障碍设计、重要信息 |
+| **高对比度模式** | 基于白色参考色高对比 | 90-100 Lc | 需高对比度的色彩组合 |
 
 ### 技术栈
 
@@ -84,7 +81,7 @@ pnpm preview
 
 ### 项目结构
 
-```
+```tree
 LumHarmony/
 ├── src/
 │   ├── components/
